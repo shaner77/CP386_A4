@@ -16,7 +16,6 @@ Version  2021-07-26
 #include <unistd.h>
 #include <pthread.h>
 #include <stdbool.h>
-#include <time.h>
 
 int Resources;
 int Processes;
@@ -24,11 +23,7 @@ int *resources;
 int **allocated;
 int **max;
 
-pthread_mutex_t lock;
-pthread_cond_t cond;
-
 int main(int argc, char** argv) {
-	srand(time(NULL));
 
 	printf("How many processes: ");
 	scanf("%d", &Processes);
@@ -40,6 +35,7 @@ int main(int argc, char** argv) {
 	printf("Available Resources\n (space separated): ");
 	for (int i = 0; i < Resources; i++) {
 		scanf("%d", &resources[i]);
+
 	}
 
 	allocated = (int **) malloc(Processes * sizeof(*allocated));
@@ -49,5 +45,10 @@ int main(int argc, char** argv) {
 	max = (int **) malloc(Processes * sizeof(*max));
 	for (int i = 0; i < Processes; i++) {
 		max[i] = (int *) malloc(Resources * sizeof(**max));
+	}
+	for (int i = 0; i < Processes; i++) {
+		printf("\nResources Required (P%d)\n (Space Separated): ", i + 1);
+		for (int j = 0; j < Resources; j++)
+			scanf("%d", &allocated[i][j]);
 	}
 }
