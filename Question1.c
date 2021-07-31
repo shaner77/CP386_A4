@@ -29,7 +29,7 @@ int completed = 0;
 pthread_mutex_t lock;
 pthread_cond_t cond;
 
-// get safe sequence if possible otherwise return false
+// get safe sequence is there is one else return false
 bool getSafeSeq();
 // process function
 void* processCode(void*);
@@ -37,6 +37,7 @@ void* processCode(void*);
 int main(int argc, char** argv) {
 	printf("How many Customers: ");
 	scanf("%d", &Customers);
+	//Resources = argc - 1;
 	Resources = (int) argc - 1;
 	available = (int *) malloc(Resources * sizeof(*available));
 
@@ -80,6 +81,10 @@ int main(int argc, char** argv) {
 		max[m][j] = *line;
 
 	}
+
+	char op[Resources * 2];
+	char cmd;
+
 	need = (int **) malloc(Customers * sizeof(*need));
 	for (int i = 0; i < Customers; i++) {
 		need[i] = (int *) malloc(Resources * sizeof(**need));
@@ -94,20 +99,21 @@ int main(int argc, char** argv) {
 	for (int i = 0; i < Customers; i++)
 		safe[i] = -1;
 
-	char op[Resources * 2];
+	// allocated
 	printf("\nEnter Command:");
 	scanf("%s", &op);
 
 	printf("Customer: %s\n", op[3]);
 	if (op[0] == '*') {
-		printf("%s", allocated);
+		printf("Available:\nMaximum:\nAllocated:\nNeed:\n");
 	} else if (op[0] == 'R' && op[1] == 'Q') {
-		printf("%s ", op);
+		printf("User Request %s ", op);
 	} else if (op[0] == 'R' && op[1] == 'L') {
-		printf("Release %s ", op);
+		printf("User Release %s ", op);
 	} else {
 		printf("None: <%s>\n", op);
 	}
+
 
 	if (!getSafeSeq()) {
 		printf(
