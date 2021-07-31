@@ -29,7 +29,7 @@ int completed = 0;
 pthread_mutex_t lock;
 pthread_cond_t cond;
 
-// get safe sequence is there is one else return false
+// get safe sequence if possible otherwise return false
 bool getSafeSeq();
 // process function
 void* processCode(void*);
@@ -37,7 +37,6 @@ void* processCode(void*);
 int main(int argc, char** argv) {
 	printf("How many Customers: ");
 	scanf("%d", &Customers);
-	//Resources = argc - 1;
 	Resources = (int) argc - 1;
 	available = (int *) malloc(Resources * sizeof(*available));
 
@@ -81,10 +80,6 @@ int main(int argc, char** argv) {
 		max[m][j] = *line;
 
 	}
-
-	char op[Resources * 2];
-	char cmd;
-
 	need = (int **) malloc(Customers * sizeof(*need));
 	for (int i = 0; i < Customers; i++) {
 		need[i] = (int *) malloc(Resources * sizeof(**need));
@@ -99,7 +94,7 @@ int main(int argc, char** argv) {
 	for (int i = 0; i < Customers; i++)
 		safe[i] = -1;
 
-	// allocated
+	char op[Resources * 2];
 	printf("\nEnter Command:");
 	scanf("%s", &op);
 
@@ -113,7 +108,6 @@ int main(int argc, char** argv) {
 	} else {
 		printf("None: <%s>\n", op);
 	}
-
 
 	if (!getSafeSeq()) {
 		printf(
