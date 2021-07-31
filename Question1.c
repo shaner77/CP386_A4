@@ -1,11 +1,22 @@
-// A Multithreaded Program that implements the banker's algorithm.
-
+/*
+ -------------------------------------
+ File:    banker.c
+ Project: A04Q1S21
+ GitHub:  https://github.com/shaner77/CP386_A4
+ -------------------------------------
+ Author:  Shane Riley
+ ID:      170696320
+ Email:   rile6320@mylaurier.ca
+ Version: 2021-07-30
+ -------------------------------------
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <time.h>
+#include <string.h>
 
 int Resources, Customers;
 int *available;
@@ -46,15 +57,8 @@ int main(int argc, char** argv) {
 		max[i] = (int *) malloc(Resources * sizeof(**max));
 
 
-	//printf("(%d)\n", Resources);
-
 	printf("\nMaximum Resources Required From file: \n");
 
-	//char *pt = NULL;
-	//char* pt = (char*) malloc(Resources * sizeof(char));
-	//	size_t len = 0;
-	//ssize_t size;
-	//int count = 0;
 	FILE* f = fopen("sample4_in.txt", "r");
 	if (f == NULL) {
 		printf("couldn't open");
@@ -62,56 +66,64 @@ int main(int argc, char** argv) {
 	}
 
 	char line[Resources];
-	//size = getline(&pt, &len, f);
 	int i = 0;
 	int j = 0;
+	int m = 0;
 	while (i < Customers * Resources) {
-
-		//fputs(("%d\n", line[i]), stdout);
 		fgets(line, sizeof(line), f);
-		int m = 0;
-
-		//for (int i = 0; i < Customers; i++) {
-		printf("Line: %s\n", line);
+		printf("%s", line);
 		i += 1;
 		if (i == Resources) {
 			m = m + 1;
+			printf("\n");
 			j = 0;
 		}
-		max[m][j] = atoi(strtok(line, ','));
+		max[m][j] = *line;
 
 	}
 
-	//srand(time(NULL));
-	// calculate need matrix
+	char op[Resources * 2];
+	char cmd;
 
 	need = (int **) malloc(Customers * sizeof(*need));
-	for (int i = 0; i < Customers; i++)
+	for (int i = 0; i < Customers; i++) {
 		need[i] = (int *) malloc(Resources * sizeof(**need));
-
-	for (int i = 0; i < Customers; i++)
-		for (int j = 0; j < Resources; j++)
+	}
+	for (int i = 0; i < Customers; i++) {
+		for (int j = 0; j < Resources; j++) {
 			need[i][j] = max[i][j] - allocated[i][j];
-
-	// allocated
-	printf("\nEnter Command:");
-	scanf("%d", &need);
-
-
-	// get safe sequence
+		}
+	}
+	// safe sequence
 	safe = (int *) malloc(Customers * sizeof(*safe));
 	for (int i = 0; i < Customers; i++)
 		safe[i] = -1;
 
+	// allocated
+	printf("\nEnter Command:");
+	scanf("%s", &op);
+
+	printf("Customer: %s\n", op[3]);
+	if (op[0] == '*') {
+		printf("%s", allocated);
+	} else if (op[0] == 'R' && op[1] == 'Q') {
+		printf("%s ", op);
+	} else if (op[0] == 'R' && op[1] == 'L') {
+		printf("Release %s ", op);
+	} else {
+		printf("None: <%s>\n", op);
+	}
+
+
 	if (!getSafeSeq()) {
 		printf(
-				"\nUnsafe State!\n\n");
+				"\nThis process cannot execute. It leads the system to a unsafe state.\n\n");
 		exit(-1);
 	}
 
 	printf("\n\nSafe Sequence Found : ");
 	for (int i = 0; i < Customers; i++) {
-		printf("%-3d", safe[i] + 1);
+		printf("%d", safe[i] + 1);
 	}
 
 	printf("\nExecuting Processes...\n\n");
@@ -150,9 +162,9 @@ int main(int argc, char** argv) {
 
 bool getSafeSeq() {
 	// get safe sequence
-	int tempRes[Resources];
+	int temp[Resources];
 	for (int i = 0; i < Resources; i++)
-		tempRes[i] = available[i];
+		temp[i] = available[i];
 
 	bool finished[Customers];
 	for (int i = 0; i < Customers; i++)
@@ -166,14 +178,14 @@ bool getSafeSeq() {
 				bool possible = true;
 
 				for (int j = 0; j < Resources; j++)
-					if (need[i][j] > tempRes[j]) {
+					if (need[i][j] > temp[j]) {
 						possible = false;
 						break;
 					}
 
 				if (possible) {
 					for (int j = 0; j < Resources; j++)
-						tempRes[j] += allocated[i][j];
+						temp[j] += allocated[i][j];
 					safe[fin] = i;
 					finished[i] = true;
 					fin += 1;
@@ -185,10 +197,10 @@ bool getSafeSeq() {
 		if (!state) {
 			for (int k = 0; k < Customers; k++)
 				safe[k] = -1;
-			return false; // no safe sequence was found
+			return false; // no safe sequence found
 		}
 	}
-	return true; // safe sequence was found
+	return true; // safe sequence found
 }
 
 // process code
@@ -202,8 +214,43 @@ void* processCode(void *arg) {
 	while (p != safe[completed])
 		pthread_cond_wait(&cond, &lock);
 
+	// process
+	printf("\n--> Process %d", p + 1);
+	printf("\n\tAllocated : ");
+	for (int i = 0; i < Resources; i++)
+		printf("%3d", allocated[p][i]);
 
-	// condition broadcast
+	printf("\n\tNeeded    : ");
+	for (int i = 0; i < Resources; i++)
+		printf("%3d", need[p][i]);
+
+	printf("\n\tAvailable : ");
+	for (int i = 0; i < Resources; i++)
+		printf("%3d", available[i]);
+
+	printf("\n");
+	sleep(1);
+
+	printf("\tResources Allocated");
+	printf("\n");
+	printf("\tProcess Code Running...");
+	printf("\n");
+	printf("\tProcess Code Completed...");
+	printf("\n");
+	printf("\tProcess Releasing Resource...");
+	printf("\n");
+	printf("\tResource Released!");
+
+	for (int i = 0; i < Resources; i++)
+		available[i] += allocated[p][i];
+
+	printf("\n\tNow Available : ");
+	for (int i = 0; i < Resources; i++)
+		printf("%3d", available[i]);
+	printf("\n\n");
+
+	sleep(1);
+
 	completed++;
 	pthread_cond_broadcast(&cond);
 	pthread_mutex_unlock(&lock);
